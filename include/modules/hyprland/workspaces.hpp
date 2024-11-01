@@ -1,17 +1,7 @@
 #pragma once
 
-#include <gtkmm/button.h>
-#include <gtkmm/label.h>
 #include <json/value.h>
 
-#include <cstdint>
-#include <map>
-#include <memory>
-#include <regex>
-#include <string>
-#include <vector>
-
-#include "AModule.hpp"
 #include "bar.hpp"
 #include "modules/hyprland/backend.hpp"
 #include "modules/hyprland/windowcreationpayload.hpp"
@@ -22,8 +12,6 @@
 using WindowAddress = std::string;
 
 namespace waybar::modules::hyprland {
-
-class Workspaces;
 
 class Workspaces : public AModule, public EventHandler {
  public:
@@ -46,6 +34,8 @@ class Workspaces : public AModule, public EventHandler {
 
   bool windowRewriteConfigUsesTitle() const { return m_anyWindowRewriteRuleUsesTitle; }
 
+  Gtk::Widget& root() override;
+
  private:
   void onEvent(const std::string& e) override;
   void updateWindowCount();
@@ -61,8 +51,8 @@ class Workspaces : public AModule, public EventHandler {
   // Config
   void parseConfig(const Json::Value& config);
   auto populateIconsMap(const Json::Value& formatIcons) -> void;
-  static auto populateBoolConfig(const Json::Value& config, const std::string& key,
-                                 bool& member) -> void;
+  static auto populateBoolConfig(const Json::Value& config, const std::string& key, bool& member)
+      -> void;
   auto populateSortByConfig(const Json::Value& config) -> void;
   auto populateIgnoreWorkspacesConfig(const Json::Value& config) -> void;
   auto populateFormatWindowSeparatorConfig(const Json::Value& config) -> void;
