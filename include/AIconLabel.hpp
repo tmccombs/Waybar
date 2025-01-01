@@ -20,6 +20,8 @@ class AIconLabel : public ALabel {
   Gtk::Image image_;
   Gtk::Box box_;
 
+  const Gtk::Widget &child() const override;
+
   bool iconEnabled() const;
 };
 

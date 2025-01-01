@@ -20,6 +20,7 @@ AIconLabel::AIconLabel(const Json::Value &config, const std::string &name, const
   int spacing = config_["icon-spacing"].isInt() ? config_["icon-spacing"].asInt() : 8;
   box_.set_spacing(spacing);
 
+  label_.unparent();  // necessary so that we can add it to box_ instead
   box_.append(image_);
   box_.append(label_);
 }
@@ -33,6 +34,6 @@ bool AIconLabel::iconEnabled() const {
   return config_["icon"].isBool() ? config_["icon"].asBool() : false;
 }
 
-Gtk::Widget &AIconLabel::root() { return box_; };
+const Gtk::Widget &AIconLabel::child() const { return box_; }
 
 }  // namespace waybar
