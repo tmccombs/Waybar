@@ -77,6 +77,8 @@ class Bar : public sigc::trackable {
   Gtk::Window window;
   Gtk::Orientation orientation = Gtk::ORIENTATION_HORIZONTAL;
   Gtk::PositionType position = Gtk::POS_TOP;
+  // Notify if the height of a horizontal bar or width of a vertical bar changes
+  sigc::signal<void()> signal_size_changed;
 
   int x_global;
   int y_global;
@@ -94,7 +96,8 @@ class Bar : public sigc::trackable {
   void setMode(const bar_mode &);
   void setPassThrough(bool passthrough);
   void setPosition(Gtk::PositionType position);
-  void onConfigure(GdkEventConfigure *ev);
+  void onConfigureWidth();
+  void onConfigureHeight();
   void configureGlobalOffset(int width, int height);
   void onOutputGeometryChanged();
 

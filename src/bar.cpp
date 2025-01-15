@@ -218,7 +218,10 @@ waybar::Bar::Bar(struct waybar_output* w_output, const Json::Value& w_config)
     margins_ = {.top = gaps, .right = gaps, .bottom = gaps, .left = gaps};
   }
 
-  window.signal_configure_event().connect_notify(sigc::mem_fun(*this, &Bar::onConfigure));
+  window.property_default_width().signal_changed().connect(
+      sigc::mem_fun(*this, &Bar::onConfigureWidth));
+  window.property_default_height().signal_changed().connect(
+      sigc::mem_fun(*this, &Bar::onConfigureHeight));
   output->monitor->property_geometry().signal_changed().connect(
       sigc::mem_fun(*this, &Bar::onOutputGeometryChanged));
 
@@ -579,29 +582,38 @@ auto waybar::Bar::setupWidgets() -> void {
   }
 }
 
-void waybar::Bar::onConfigure(GdkEventConfigure* ev) {
-  /*
-   * GTK wants new size for the window.
-   * Actual resizing and management of the exclusve zone is handled within the gtk-layer-shell
-   * code. This event handler only updates stored size of the window and prints some warnings.
-   *
-   * Note: forced resizing to a window smaller than required by GTK would not work with
-   * gtk-layer-shell.
-   */
+/*
+ * GTK wants new size for the window.
+ * Actual resizing and management of the exclusve zone is handled within the gtk-layer-shell
+ * code. These event handlers only update stored size of the window and print some warnings.
+ *
+ * Note: forced resizing to a window smaller than required by GTK would not work with
+ * gtk-layer-shell.
+ */
+void waybar::Bar::onConfigureWidth() {
+  auto width = window.property_default_width().get_value();
   if (orientation == Gtk::ORIENTATION_VERTICAL) {
-    if (width_ > 1 && ev->width > static_cast<int>(width_)) {
-      spdlog::warn(MIN_WIDTH_MSG, width_, ev->width);
+    if (width_ > 1 && width > static_cast<int>(width_)) {
+      spdlog::warn(MIN_WIDTH_MSG, width_, width);
     }
-  } else {
-    if (height_ > 1 && ev->height > static_cast<int>(height_)) {
-      spdlog::warn(MIN_HEIGHT_MSG, height_, ev->height);
-    }
+    signal_size_changed.emit();
   }
-  width_ = ev->width;
-  height_ = ev->height;
+  width_ = width;
+  configureGlobalOffset(width_, height_);
+  spdlog::info(BAR_SIZE_MSG, width_, height_, output->name);
+}
 
-  configureGlobalOffset(ev->width, ev->height);
-  spdlog::info(BAR_SIZE_MSG, ev->width, ev->height, output->name);
+void waybar::Bar::onConfigureHeight() {
+  auto height = window.property_default_height().get_value();
+  if (orientation == Gtk::ORIENTATION_HORIZONTAL) {
+    if (height_ > 1 && height > static_cast<int>(height_)) {
+      spdlog::warn(MIN_HEIGHT_MSG, height_, height);
+    }
+    signal_size_changed.emit();
+  }
+  height_ = height;
+  configureGlobalOffset(width_, height_);
+  spdlog::info(BAR_SIZE_MSG, width_, height_, output->name);
 }
 
 void waybar::Bar::configureGlobalOffset(int width, int height) {

@@ -52,8 +52,7 @@ Item::Item(const std::string& bn, const std::string& op, const Json::Value& conf
     show_passive_ = config["show-passive-items"].asBool();
   }
 
-  auto& window = const_cast<Bar&>(bar).window;
-  window.signal_configure_event().connect_notify(sigc::mem_fun(*this, &Item::onConfigure));
+  bar.signal_size_changed.connect(sigc::mem_fun(*this, &Item::updateImage));
   event_box.add(image);
   event_box.add_events(Gdk::BUTTON_PRESS_MASK | Gdk::SCROLL_MASK | Gdk::SMOOTH_SCROLL_MASK);
   event_box.signal_button_press_event().connect(sigc::mem_fun(*this, &Item::handleClick));
@@ -81,8 +80,6 @@ bool Item::handleMouseLeave(GdkEventCrossing* const& e) {
   event_box.unset_state_flags(Gtk::StateFlags::STATE_FLAG_PRELIGHT);
   return false;
 }
-
-void Item::onConfigure(GdkEventConfigure* ev) { this->updateImage(); }
 
 void Item::proxyReady(Glib::RefPtr<Gio::AsyncResult>& result) {
   try {
